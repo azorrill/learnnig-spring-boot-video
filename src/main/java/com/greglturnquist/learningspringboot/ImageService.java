@@ -15,14 +15,9 @@
  */
 package com.greglturnquist.learningspringboot;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionEvaluationReport;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -32,6 +27,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * @author Greg Turnquist
@@ -80,7 +81,7 @@ public class ImageService {
 	 * @return Spring Boot {@link CommandLineRunner} automatically run after app context is loaded.
 	 */
 	@Bean
-	CommandLineRunner setUp(ImageRepository repository) throws IOException {
+	CommandLineRunner setUp(ImageRepository repository, ConditionEvaluationReport report) throws IOException {
 
 		return (args) -> {
 			FileSystemUtils.deleteRecursively(new File(UPLOAD_ROOT));
@@ -95,6 +96,12 @@ public class ImageService {
 
 			FileCopyUtils.copy("Test file3", new FileWriter(UPLOAD_ROOT + "/test3"));
 			repository.save(new Image("test3"));
+
+			report.getConditionAndOutcomesBySource().entrySet().stream()
+					.filter(entry -> entry.getValue().isFullMatch())
+					.forEach((entry -> {
+						System.out.print(entry.getKey() + " =>  Match? " + entry.getValue().isFullMatch());
+					}));
 		};
 
 	}
